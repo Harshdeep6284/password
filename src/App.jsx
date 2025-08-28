@@ -1,103 +1,70 @@
 import { useState } from 'react'
-
 import './App.css'
+import { useCallback } from 'react'
+import { useEffect } from 'react'
+import { useRef } from 'react'
 
 function App() {
-   const [length, setLength] = useState(8);
-  const [includeNumbers, setIncludeNumbers] = useState(false);
-  const [includeSymbols, setIncludeSymbols] = useState(false);
-  const [password, setPassword] = useState("");
+ 
+  const [length , setLength] =  useState(8)
+  const [numberAllowed, setNumberAllowed] = useState(false)
+  const [charAllowed, setCharAllowed] = useState(false)
+  const [password, setPassword] =  useState("")
 
-  const generatePassword = () => {
-    let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    if (includeNumbers) chars += "0123456789";
-    if (includeSymbols) chars += "!@#$%^&*()_+[]{}|;:,.<>?";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+  // useRef Hook
+  const passwordRef = useRef(null)
+
+  const passwordGenerator =  useCallback(()=>{
+    let pass = ''
+    let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    if(numberAllowed) str += "0123456789"
+    if(charAllowed) str += "!@#$%^&*_-=+[]{}~`"
+
+    for(let i = 0; i < length; i++){
+     let char = Math.floor(Math.random() * str.length)
+     pass += str.charAt(char)
     }
-    setPassword(result);
-  };
-  
+    setPassword(pass)
+  },[length, numberAllowed, charAllowed])
 
-  
-  const copyPassword = () => {
-    navigator.clipboard.writeText(password);
-    alert("Password copied!");
+  const copyText = () => {
+    if (password) {
+      navigator.clipboard.writeText(password);
+      if (passwordRef.current) {
+        passwordRef.current.select();
+      }
+    }
   };
 
+  // copy functionality define here
+  useEffect(()=>{
+      passwordGenerator()
+  },[length , numberAllowed , charAllowed, passwordGenerator])
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-gray-800 p-6 rounded-xl shadow-lg w-[400px]">
-        <h2 className="text-white text-xl font-bold text-center mb-4">Password Generator</h2>
-
-        
-        <div className="flex items-center gap-1 mb-4">
-          <input
-            type="text"
-            
-           
-            placeholder="Your password"
-            className="w--full p-2 rounded text-black"
-            read only
-          />
-          <button
-            onClick={copyPassword}
-            className="bg-blue-500 hover:bg-blue-600 px-6  py-2 rounded-md text-white font-medium"
-            
-          >
-            Copy
-          </button>
-        </div>
-
-        
-        <div className="mt-4 flex items-center gap-4">
-
-          <input
-            type="range"
-            min="4"
-            max="20"
-            value={length}
-            onChange={(e) => setLength(e.target.value)}
-            className="accent-blue-600 w-[250px]"
-          />
-          <span className="text-gray-300">Length:{length}</span>
-        </div>
-
-        
-        <div className="flex flex-col gap-2 mb-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={includeNumbers}
-              onChange={() => setIncludeNumbers(!includeNumbers)}
-            />
-            Numbers
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={includeSymbols}
-              onChange={() => setIncludeSymbols(!includeSymbols)}
-            />
-            Characters
-          </label>
-        </div>
-
-        
-        <button
-          onClick={generatePassword}
-          className="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md font-semibold"
-        >
-          Generate
-        </button>
+    <div className='w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-3 bg-gray-800 my-8 text-orange-500'>
+      <h1 className='text-white text-center my-3'>Password Generator</h1>
+     <div className='flex shadow rounded-lg overflow-hidden mb-4'>
+      <input type="text" className='outline-none w-full py-1 px-3' readOnly value={password} ref={passwordRef}/>
+  <button className='outline-none bg-blue-700 text-white px-3 py-0.5 shrink-0' onClick={copyText}>copy</button>
+     </div>
+     <div className='flex items-center gap-x-2'>
+      <div className='flex items-center gap-x-1'>
+        <input type="range" min={6} max={100} value={length} className='cursor-pointer' 
+        onChange={(e)=> {setLength(e.target.value)}}
+        />
+        <label htmlFor="length">Length : {length}</label>
       </div>
+      <div className='flex items-center gap-x-1'>
+        <input type="checkbox"   onChange={()=> {setNumberAllowed((prev) => !prev) }}  />
+        <label htmlFor="length">Numbers</label>
+      </div>
+      <div className='flex items-center gap-x-1'>
+        <input type="checkbox" onChange={()=> {setCharAllowed((prev) => !prev) }} />
+        <label htmlFor="length">Characters</label>
+      </div>
+     </div>
     </div>
-  );
+  )
 }
-       
-          
-  
-
 
 export default App
